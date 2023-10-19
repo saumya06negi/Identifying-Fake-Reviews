@@ -1,0 +1,131 @@
+
+#Importing all required librariesimport numpy as np import pandas as pd import stringfrom sklearn.model_selection import train_test_split, GridSearchCVfrom sklearn.metrics import classification_report, confusion_matrix, accuracy_score import nltkfrom nltk.corpus import stopwordsfrom sklearn.feature_extraction.text import CountVectorizer, TfidfTransformerfrom sklearn.pipeline import Pipelinefrom sklearn.ensemble import RandomForestClassifierfrom sklearn.svm import SVCfrom sklearn.linear_model import LogisticRegression
+#Importing all required libraries
+import numpy as np 
+import pandas as pd 
+import string
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score 
+import nltk
+from nltk.corpus import stopwords
+from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
+from sklearn.linear_model import LogisticRegression
+
+import os
+
+os.getcwd()
+output
+
+from google.colab import drive
+
+drive.mount('/content/drive')
+output
+Mounted at /content/drive
+
+data = pd.read_csv('/content/drive/MyDrive/miniproject5/dataset.csv') #reading our dataset
+
+data.head()
+output
+
+data.drop('Unnamed: 0',axis=1,inplace=True)
+
+data.head()#printing the head of the dataset 
+output
+
+data.dropna(inplace=True) 
+data['length'] = data['text_'].apply(len) 
+data[data['label']=='OR'][['text_','length']].sort_values(by='length',ascending=False).head().iloc[0].text_ 
+output
+
+
+#convert the text taken into input and removing all the punctuation and converting it into small letters
+def convertmyTxt(rv): 
+    np = [c for c in rv if c not in string.punctuation] 
+    np = ''.join(np) 
+    return [w for w in np.split() if w.lower() not in stopwords.words('english')]
+x_train, x_test, y_train, y_test = train_test_split(data['text_'],data['label'],test_size=0.25)
+
+pip = Pipeline([
+    ('bow',CountVectorizer(analyzer=convertmyTxt)),
+    ('tfidf',TfidfTransformer()),
+    ('classifier',RandomForestClassifier())
+]) #defining Random Forest Classifier model in which we will pass the training data
+
+!pip install nltk
+output
+Looking in indexes: https://pypi.org/simple, https://us-python.pkg.dev/colab-wheels/public/simple/
+Requirement already satisfied: nltk in /usr/local/lib/python3.8/dist-packages (3.7)
+Requirement already satisfied: joblib in /usr/local/lib/python3.8/dist-packages (from nltk) (1.2.0)
+Requirement already satisfied: tqdm in /usr/local/lib/python3.8/dist-packages (from nltk) (4.64.1)
+Requirement already satisfied: click in /usr/local/lib/python3.8/dist-packages (from nltk) (7.1.2)
+Requirement already satisfied: regex>=2021.8.3 in /usr/local/lib/python3.8/dist-packages (from nltk) (2022.6.2)
+
+import nltk
+
+nltk.download('stopwords')
+output
+[nltk_data] Downloading package stopwords to /root/nltk_data...
+[nltk_data]   Unzipping corpora/stopwords.zip.
+True
+
+pip.fit(x_train,y_train)
+output
+Pipeline(steps=[('bow',
+                 CountVectorizer(analyzer=<function convertmyTxt at 0x7f34555ab670>)),
+                ('tfidf', TfidfTransformer()),
+                ('classifier', RandomForestClassifier())])
+
+randomForestClassifier = pip.predict(x_test) 
+randomForestClassifier
+output
+array(['CG', 'OR', 'CG', ..., 'CG', 'CG', 'CG'], dtype=object)
+
+print('Accuracy of the model: ',str(np.round(accuracy_score(y_test,randomForestClassifier)*100,2)) + '%')#predicting the accuracy of the Random Forest Classifier model
+output
+Accuracy of the model:  83.5%
+
+pip = Pipeline([
+    ('bow',CountVectorizer(analyzer=convertmyTxt)),
+    ('tfidf',TfidfTransformer()),
+    ('classifier',SVC())
+])#defining Support vector Classifier model in which we will pass the training data
+
+pip.fit(x_train,y_train)
+account_circle
+Pipeline(steps=[('bow',
+                 CountVectorizer(analyzer=<function convertmyTxt at 0x7fc32eb63280>)),
+                ('tfidf', TfidfTransformer()), ('classifier', SVC())])
+
+supportVectorClassifier = pip.predict(x_test)
+supportVectorClassifier
+output
+array(['CG', 'OR', 'CG', ..., 'CG', 'CG', 'OR'], dtype=object)
+
+print('accuracy of the model:',str(np.round(accuracy_score(y_test,supportVectorClassifier)*100,2)) + '%') #predicting the accuracy of the Support Vector Classifier Model 
+output
+accuracy of the model: 88.44%
+
+pip = Pipeline([
+    ('bow',CountVectorizer(analyzer='word')),
+    ('tfidf',TfidfTransformer()),
+    ('classifier',LogisticRegression())
+])#defining Logistic Regression model in which we will pass the training data
+
+pip.fit(x_train,y_train)
+output
+Pipeline(steps=[('bow', CountVectorizer()), ('tfidf', TfidfTransformer()),
+                ('classifier', LogisticRegression())])
+
+logisticRegression = pip.predict(x_test)logisticRegression
+logisticRegression = pip.predict(x_test)
+logisticRegression
+output
+array(['CG', 'OR', 'CG', ..., 'CG', 'CG', 'OR'], dtype=object)
+
+print('accuracy of the model:',str(np.round(accuracy_score(y_test,logisticRegression)*100,2)) + '%')#predicting the accuracy of logistic Regression model
+print('accuracy of the model:',str(np.round(accuracy_score(y_test,logisticRegression)*100,2)) + '%')#predicting the accuracy of logistic Regression model
+output
+accuracy of the model: 87.75%
